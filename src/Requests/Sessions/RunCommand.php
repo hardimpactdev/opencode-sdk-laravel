@@ -2,9 +2,11 @@
 
 namespace HardImpact\OpenCode\Requests\Sessions;
 
+use HardImpact\OpenCode\Data\MessageWithParts;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class RunCommand extends Request implements HasBody
@@ -44,5 +46,10 @@ class RunCommand extends Request implements HasBody
             'messageID' => $this->messageID,
             'model' => $this->model,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): MessageWithParts
+    {
+        return MessageWithParts::fromResponse($response->json());
     }
 }

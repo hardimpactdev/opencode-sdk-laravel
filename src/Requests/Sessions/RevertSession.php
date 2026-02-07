@@ -2,9 +2,11 @@
 
 namespace HardImpact\OpenCode\Requests\Sessions;
 
+use HardImpact\OpenCode\Data\Session;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class RevertSession extends Request implements HasBody
@@ -38,5 +40,10 @@ class RevertSession extends Request implements HasBody
             'messageID' => $this->messageID,
             'partID' => $this->partID,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): Session
+    {
+        return Session::from($response->json());
     }
 }

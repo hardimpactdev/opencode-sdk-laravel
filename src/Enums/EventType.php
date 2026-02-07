@@ -9,6 +9,7 @@ enum EventType: string
     case SessionDeleted = 'session.deleted';
     case SessionIdle = 'session.idle';
     case SessionError = 'session.error';
+    case SessionStatus = 'session.status';
     case SessionCompacted = 'session.compacted';
     case MessageUpdated = 'message.updated';
     case MessageRemoved = 'message.removed';

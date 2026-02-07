@@ -38,9 +38,9 @@ class SessionResource extends BaseResource
         return $this->connector->send(new ListSessions)->dto();
     }
 
-    public function get(string $id): Session
+    public function get(string $id, ?string $directory = null): Session
     {
-        return $this->connector->send(new GetSession($id))->dto();
+        return $this->connector->send(new GetSession($id, $directory))->dto();
     }
 
     public function update(string $id, ?string $title = null): Session

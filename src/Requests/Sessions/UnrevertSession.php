@@ -2,8 +2,10 @@
 
 namespace HardImpact\OpenCode\Requests\Sessions;
 
+use HardImpact\OpenCode\Data\Session;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class UnrevertSession extends Request
 {
@@ -24,5 +26,10 @@ class UnrevertSession extends Request
         return array_filter([
             'directory' => $this->directory,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): Session
+    {
+        return Session::from($response->json());
     }
 }

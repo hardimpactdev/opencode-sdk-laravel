@@ -2,8 +2,10 @@
 
 namespace HardImpact\OpenCode\Requests\Providers;
 
+use HardImpact\OpenCode\Data\Provider;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class GetProviders extends Request
 {
@@ -12,5 +14,14 @@ class GetProviders extends Request
     public function resolveEndpoint(): string
     {
         return '/config/providers';
+    }
+
+    /** @return Provider[] */
+    public function createDtoFromResponse(Response $response): array
+    {
+        return array_map(
+            fn (array $data) => Provider::from($data),
+            $response->json() ?? [],
+        );
     }
 }
