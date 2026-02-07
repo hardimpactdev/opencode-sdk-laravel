@@ -175,4 +175,88 @@ class SessionResource extends BaseResource
     {
         return $this->connector->send(new UnshareSession($id))->dto();
     }
+
+    /**
+     * Check if a session is idle (not updated within threshold).
+     */
+    public function isIdle(string $id, ?string $directory = null, int $thresholdMs = 120_000): bool
+    {
+        $session = $this->get($id, $directory);
+        $updatedAt = $session->time['updated'] ?? null;
+
+        if (! is_numeric($updatedAt)) {
+            return false;
+        }
+
+        $nowMs = (int) (microtime(true) * 1000);
+        $ageMs = $nowMs - (int) $updatedAt;
+
+        return $ageMs > $thresholdMs;
+    }
+
+    /**
+     * Check if a session is active (updated within threshold).
+     */
+    public function isActive(string $id, ?string $directory = null, int $thresholdMs = 120_000): bool
+    {
+        return ! $this->isIdle($id, $directory, $thresholdMs);
+    }
+
+    /**
+     * Get text content from the last message in a session.
+     */
+    public function getLastMessageText(string $id): string
+    {
+        $messages = $this->messages($id);
+
+        if (empty($messages)) {
+            return '';
+        }
+
+        $lastMessage = end($messages);
+        $parts = $lastMessage->parts ?? [];
+
+        if (! is_array($parts)) {
+            return '';
+        }
+
+        $text = '';
+        foreach ($parts as $part) {
+            if (is_object($part) && isset($part->type) && $part->type->value === 'text') {
+                $text .= $part->text ?? '';
+            }
+        }
+
+        return $text;
+    }
+
+    /**
+     * Check if the last message in a session contains completion indicators.
+     *
+     * @param  array<string>  $patterns  Regex patterns to match (default: common completion patterns)
+     */
+    public function hasCompletionIndicators(string $id, array $patterns = []): bool
+    {
+        if (empty($patterns)) {
+            $patterns = [
+                '/completed successfully/i',
+                '/task.*complete/i',
+                '/Summary:/i',
+            ];
+        }
+
+        $text = $this->getLastMessageText($id);
+
+        if (empty($text)) {
+            return false;
+        }
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $text)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
