@@ -32,6 +32,38 @@ class SessionResource extends BaseResource
         )->dto();
     }
 
+    /**
+     * Create a session and send an initial prompt in one operation.
+     *
+     * @return array{session: Session, message: MessageWithParts}
+     */
+    public function createAndPrompt(
+        string $directory,
+        string $providerID,
+        string $modelID,
+        string $text,
+        ?string $title = null,
+        ?string $system = null,
+        ?array $tools = null,
+    ): array {
+        $session = $this->create($directory, $title);
+
+        $message = $this->sendMessage(
+            id: $session->id,
+            providerID: $providerID,
+            modelID: $modelID,
+            text: $text,
+            directory: $directory,
+            system: $system,
+            tools: $tools,
+        );
+
+        return [
+            'session' => $session,
+            'message' => $message,
+        ];
+    }
+
     /** @return Session[] */
     public function list(): array
     {
