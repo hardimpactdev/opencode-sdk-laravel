@@ -13,6 +13,7 @@ class GetMessages extends Request
 
     public function __construct(
         protected string $id,
+        protected ?string $directory = null,
     ) {}
 
     public function resolveEndpoint(): string
@@ -20,12 +21,19 @@ class GetMessages extends Request
         return "/session/{$this->id}/message";
     }
 
+    protected function defaultQuery(): array
+    {
+        return array_filter([
+            'directory' => $this->directory,
+        ]);
+    }
+
     /** @return MessageWithParts[] */
     public function createDtoFromResponse(Response $response): array
     {
         return array_map(
             fn (array $data) => MessageWithParts::fromResponse($data),
-            $response->json() ?? [],
+            (array) $response->json(),
         );
     }
 }

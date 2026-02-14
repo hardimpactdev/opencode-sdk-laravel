@@ -2,9 +2,9 @@
 
 namespace HardImpact\OpenCode\Resources;
 
-use HardImpact\OpenCode\Data\AssistantMessage;
 use HardImpact\OpenCode\Data\MessageWithParts;
 use HardImpact\OpenCode\Data\Session;
+use HardImpact\OpenCode\Enums\PartType;
 use HardImpact\OpenCode\Requests\Sessions\AbortSession;
 use HardImpact\OpenCode\Requests\Sessions\CreateSession;
 use HardImpact\OpenCode\Requests\Sessions\DeleteSession;
@@ -16,11 +16,11 @@ use HardImpact\OpenCode\Requests\Sessions\RevertSession;
 use HardImpact\OpenCode\Requests\Sessions\RunCommand;
 use HardImpact\OpenCode\Requests\Sessions\SendMessage;
 use HardImpact\OpenCode\Requests\Sessions\SendMessageAsync;
-use HardImpact\OpenCode\Requests\Sessions\UpdateSession;
 use HardImpact\OpenCode\Requests\Sessions\ShareSession;
 use HardImpact\OpenCode\Requests\Sessions\SummarizeSession;
 use HardImpact\OpenCode\Requests\Sessions\UnrevertSession;
 use HardImpact\OpenCode\Requests\Sessions\UnshareSession;
+use HardImpact\OpenCode\Requests\Sessions\UpdateSession;
 use Saloon\Http\BaseResource;
 
 class SessionResource extends BaseResource
@@ -108,9 +108,9 @@ class SessionResource extends BaseResource
     }
 
     /** @return MessageWithParts[] */
-    public function messages(string $id): array
+    public function messages(string $id, ?string $directory = null): array
     {
-        return $this->connector->send(new GetMessages($id))->dto();
+        return $this->connector->send(new GetMessages($id, $directory))->dto();
     }
 
     public function init(
@@ -205,24 +205,19 @@ class SessionResource extends BaseResource
     /**
      * Get text content from the last message in a session.
      */
-    public function getLastMessageText(string $id): string
+    public function getLastMessageText(string $id, ?string $directory = null): string
     {
-        $messages = $this->messages($id);
+        $messages = $this->messages($id, $directory);
 
         if (empty($messages)) {
             return '';
         }
 
-        $lastMessage = end($messages);
-        $parts = $lastMessage->parts ?? [];
-
-        if (! is_array($parts)) {
-            return '';
-        }
+        $lastMessage = $messages[array_key_last($messages)];
 
         $text = '';
-        foreach ($parts as $part) {
-            if (is_object($part) && isset($part->type) && $part->type->value === 'text') {
+        foreach ($lastMessage->parts as $part) {
+            if ($part->type === PartType::Text) {
                 $text .= $part->text ?? '';
             }
         }
@@ -235,7 +230,7 @@ class SessionResource extends BaseResource
      *
      * @param  array<string>  $patterns  Regex patterns to match (default: common completion patterns)
      */
-    public function hasCompletionIndicators(string $id, array $patterns = []): bool
+    public function hasCompletionIndicators(string $id, ?string $directory = null, array $patterns = []): bool
     {
         if (empty($patterns)) {
             $patterns = [
@@ -245,13 +240,17 @@ class SessionResource extends BaseResource
             ];
         }
 
-        $text = $this->getLastMessageText($id);
+        $text = $this->getLastMessageText($id, $directory);
 
         if (empty($text)) {
             return false;
         }
 
         foreach ($patterns as $pattern) {
+            if (@preg_match($pattern, '') === false) {
+                throw new \InvalidArgumentException("Invalid regex pattern: {$pattern}");
+            }
+
             if (preg_match($pattern, $text)) {
                 return true;
             }

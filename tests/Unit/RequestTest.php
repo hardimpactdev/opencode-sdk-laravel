@@ -1,17 +1,17 @@
 <?php
 
+use HardImpact\OpenCode\Requests\Providers\GetProviders;
+use HardImpact\OpenCode\Requests\Questions\AnswerQuestion;
+use HardImpact\OpenCode\Requests\Questions\RejectQuestion;
 use HardImpact\OpenCode\Requests\Sessions\CreateSession;
 use HardImpact\OpenCode\Requests\Sessions\DeleteSession;
 use HardImpact\OpenCode\Requests\Sessions\GetMessages;
 use HardImpact\OpenCode\Requests\Sessions\GetSession;
 use HardImpact\OpenCode\Requests\Sessions\ListSessions;
+use HardImpact\OpenCode\Requests\Sessions\RunCommand;
 use HardImpact\OpenCode\Requests\Sessions\SendMessage;
 use HardImpact\OpenCode\Requests\Sessions\SendMessageAsync;
 use HardImpact\OpenCode\Requests\Sessions\UpdateSession;
-use HardImpact\OpenCode\Requests\Sessions\RunCommand;
-use HardImpact\OpenCode\Requests\Questions\AnswerQuestion;
-use HardImpact\OpenCode\Requests\Questions\RejectQuestion;
-use HardImpact\OpenCode\Requests\Providers\GetProviders;
 use Saloon\Enums\Method;
 
 it('builds CreateSession request correctly', function () {
@@ -71,6 +71,14 @@ it('builds GetMessages request correctly', function () {
 
     expect($request->resolveEndpoint())->toBe('/session/ses_123/message');
     expect($request->getMethod())->toBe(Method::GET);
+});
+
+it('builds GetMessages request with directory parameter', function () {
+    $request = new GetMessages('ses_123', '/path/to/project');
+
+    expect($request->resolveEndpoint())->toBe('/session/ses_123/message');
+    expect($request->getMethod())->toBe(Method::GET);
+    expect($request->query()->get('directory'))->toBe('/path/to/project');
 });
 
 it('builds AnswerQuestion request correctly', function () {
