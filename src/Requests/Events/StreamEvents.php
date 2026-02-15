@@ -9,9 +9,20 @@ class StreamEvents extends Request
 {
     protected Method $method = Method::GET;
 
+    public function __construct(
+        protected ?string $directory = null,
+    ) {}
+
     public function resolveEndpoint(): string
     {
         return '/event';
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_filter([
+            'directory' => $this->directory,
+        ]);
     }
 
     protected function defaultHeaders(): array

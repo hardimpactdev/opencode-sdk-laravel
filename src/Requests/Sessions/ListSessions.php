@@ -21,7 +21,7 @@ class ListSessions extends Request
     {
         return array_map(
             fn (array $data) => Session::from($data),
-            $response->json() ?? [],
+            (array) $response->json(),
         );
     }
 }

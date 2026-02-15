@@ -21,7 +21,7 @@ class GetProviders extends Request
     {
         return array_map(
             fn (array $data) => Provider::from($data),
-            $response->json() ?? [],
+            (array) $response->json(),
         );
     }
 }

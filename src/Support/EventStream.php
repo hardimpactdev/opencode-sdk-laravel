@@ -6,23 +6,27 @@ use Generator;
 use HardImpact\OpenCode\Data\Event;
 use HardImpact\OpenCode\Enums\EventType;
 use Psr\Http\Message\StreamInterface;
+use RuntimeException;
 
 class EventStream
 {
-    protected StreamInterface $stream;
+    private const MAX_BUFFER_SIZE = 1_048_576; // 1MB
 
     protected string $buffer = '';
 
-    public function __construct(StreamInterface $stream)
-    {
-        $this->stream = $stream;
-    }
+    public function __construct(
+        protected StreamInterface $stream,
+    ) {}
 
     /** @return Generator<Event> */
     public function events(): Generator
     {
         while (! $this->stream->eof()) {
             $this->buffer .= $this->stream->read(8192);
+
+            if (strlen($this->buffer) > self::MAX_BUFFER_SIZE) {
+                throw new RuntimeException('SSE buffer exceeded maximum size');
+            }
 
             while (($pos = strpos($this->buffer, "\n\n")) !== false) {
                 $rawEvent = substr($this->buffer, 0, $pos);

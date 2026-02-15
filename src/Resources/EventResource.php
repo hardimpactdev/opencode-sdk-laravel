@@ -10,10 +10,12 @@ use Saloon\Http\BaseResource;
 
 class EventResource extends BaseResource
 {
-    /** @return Generator<Event> */
-    public function stream(): Generator
+    /**
+     * @return Generator<Event>
+     */
+    public function stream(?string $directory = null): Generator
     {
-        $response = $this->connector->send(new StreamEvents);
+        $response = $this->connector->send(new StreamEvents($directory));
         $eventStream = new EventStream($response->stream());
 
         return $eventStream->events();

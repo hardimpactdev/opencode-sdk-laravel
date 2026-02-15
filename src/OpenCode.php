@@ -23,27 +23,34 @@ class OpenCode extends Connector
     {
         return [
             'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
         ];
     }
 
     public function sessions(): SessionResource
     {
-        return new SessionResource($this);
+        return $this->sessions ??= new SessionResource($this);
     }
 
     public function events(): EventResource
     {
-        return new EventResource($this);
+        return $this->events ??= new EventResource($this);
     }
 
     public function questions(): QuestionResource
     {
-        return new QuestionResource($this);
+        return $this->questions ??= new QuestionResource($this);
     }
 
     public function providers(): ProviderResource
     {
-        return new ProviderResource($this);
+        return $this->providers ??= new ProviderResource($this);
     }
+
+    private ?SessionResource $sessions = null;
+
+    private ?EventResource $events = null;
+
+    private ?QuestionResource $questions = null;
+
+    private ?ProviderResource $providers = null;
 }

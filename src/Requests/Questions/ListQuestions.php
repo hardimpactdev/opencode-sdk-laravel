@@ -21,7 +21,7 @@ class ListQuestions extends Request
     {
         return array_map(
             fn (array $data) => Question::from($data),
-            $response->json() ?? [],
+            (array) $response->json(),
         );
     }
 }
