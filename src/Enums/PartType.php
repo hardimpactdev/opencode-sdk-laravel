@@ -11,4 +11,5 @@ enum PartType: string
     case StepFinish = 'step-finish';
     case Snapshot = 'snapshot';
     case Patch = 'patch';
+    case Reasoning = 'reasoning';
 }
