@@ -193,6 +193,132 @@ foreach ($opencode->events()->stream() as $event) {
 $providers = $opencode->providers()->list();
 ```
 
+### Task Management (Sequence)
+
+The SDK includes a pre-creation refinement pipeline for Sequence-style task management:
+
+#### Refine and Create Tasks
+
+```php
+use HardImpact\OpenCode\Services\TaskCreationService;
+
+$service = app(TaskCreationService::class);
+
+// Create refined task(s) from a raw prompt
+$tasks = $service->refineAndCreate(
+    prompt: 'Build a user authentication system and create an admin dashboard',
+    assignee: 'coder',
+    projectId: 7,
+);
+
+// Each task is fully refined and immediately claimable
+foreach ($tasks as $task) {
+    echo $task->title;
+    echo $task->isClaimable() ? 'Ready to work' : 'Blocked';
+}
+```
+
+#### Direct Task Creation (Bypass Refinement)
+
+```php
+// Skip refinement for explicit/manual task creation
+$task = $service->createDirectTask(
+    prompt: 'Fix urgent bug',
+    assignee: 'coder',
+    projectId: 7,
+);
+```
+
+#### API Endpoints
+
+```bash
+# Refine and create task(s)
+curl -X POST https://your-app.test/api/tasks/refine-and-create \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "prompt": "Build authentication and admin panel",
+    "assignee": "coder",
+    "project_id": 7
+  }'
+
+# Direct creation (bypass refinement)
+curl -X POST https://your-app.test/api/tasks/create-direct \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "prompt": "Fix urgent bug",
+    "assignee": "coder",
+    "project_id": 7
+  }'
+```
+
+#### Response Format
+
+```json
+{
+  "success": true,
+  "message": "2 tasks created successfully",
+  "data": [
+    {
+      "id": 1,
+      "title": "User Authentication System",
+      "status": "pending",
+      "assignee": "coder",
+      "project_id": 7,
+      "refined": true,
+      "is_claimable": true,
+      "blocked_by": [],
+      "refinement_output": {
+        "title": "User Authentication System",
+        "objective": "Build something",
+        "acceptance_criteria": "...",
+        "deliverables": "...",
+        "blocked_by": []
+      }
+    },
+    {
+      "id": 2,
+      "title": "Admin Dashboard",
+      "status": "pending",
+      "is_claimable": false,
+      "blocked_by": [1]
+    }
+  ]
+}
+```
+
+#### Task Dependencies
+
+Multi-objective prompts are automatically decomposed into separate tasks with `blocked_by` dependencies:
+
+```php
+// Creates 2 tasks: Task 2 depends on Task 1
+$tasks = $service->refineAndCreate(
+    prompt: 'Build API endpoint and then write tests',
+    assignee: 'coder',
+    projectId: 7,
+);
+
+$tasks[0]->isClaimable(); // true (no dependencies)
+$tasks[1]->isClaimable(); // false (blocked by task 1)
+```
+
+#### Schema Validation
+
+All refined tasks must pass strict validation before creation:
+
+```php
+use HardImpact\OpenCode\Services\SchemaValidator;
+
+$validator = new SchemaValidator();
+$result = $validator->validate($spec);
+
+if (!$result->isValid()) {
+    // Get actionable errors with field paths
+    $errors = $result->getErrors();
+    // ['field' => 'objective', 'reason' => 'Required section missing']
+}
+```
+
 ## Feature Parity
 
 Comparison with the official OpenCode SDKs ([JS](https://github.com/anomalyco/opencode-sdk-js), [Go](https://github.com/anomalyco/opencode-sdk-go)).
@@ -239,6 +365,16 @@ Comparison with the official OpenCode SDKs ([JS](https://github.com/anomalyco/op
 | Endpoint | Laravel | JS | Go |
 |----------|:-------:|:--:|:--:|
 | List providers + models | Y | Y | Y |
+
+### Task Management (Sequence)
+
+| Endpoint | Laravel | JS | Go |
+|----------|:-------:|:--:|:--:|
+| Refine and create tasks | Y | - | - |
+| Direct task creation | Y | - | - |
+| Multi-task decomposition | Y | - | - |
+| Dependency persistence | Y | - | - |
+| Schema validation | Y | - | - |
 
 ### App
 
