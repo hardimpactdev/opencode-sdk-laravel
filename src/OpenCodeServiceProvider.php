@@ -11,11 +11,7 @@ class OpenCodeServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('opencode')
-            ->hasConfigFile()
-            ->hasMigrations([
-                '2024_01_01_000001_create_tasks_table',
-            ])
-            ->hasRoutes(['opencode']);
+            ->hasConfigFile();
     }
 
     public function packageRegistered(): void
