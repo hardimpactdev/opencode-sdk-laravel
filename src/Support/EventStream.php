@@ -10,7 +10,7 @@ use RuntimeException;
 
 class EventStream
 {
-    private const MAX_BUFFER_SIZE = 1_048_576; // 1MB
+    private const int MAX_BUFFER_SIZE = 1_048_576; // 1MB
 
     protected string $buffer = '';
 

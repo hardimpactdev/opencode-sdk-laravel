@@ -16,7 +16,7 @@ class AbortSession extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/session/{$this->id}/abort";
+        return sprintf('/session/%s/abort', $this->id);
     }
 
     protected function defaultQuery(): array

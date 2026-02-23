@@ -26,7 +26,7 @@ class SendMessageAsync extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/session/{$this->id}/prompt_async";
+        return sprintf('/session/%s/prompt_async', $this->id);
     }
 
     protected function defaultQuery(): array

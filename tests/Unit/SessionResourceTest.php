@@ -4,13 +4,13 @@ use HardImpact\OpenCode\Resources\SessionResource;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->mockClient = new MockClient([
         MockResponse::make(['id' => 'ses_123', 'title' => 'Test']),
     ]);
 });
 
-test('isIdle returns true for sessions older than threshold', function () {
+test('isIdle returns true for sessions older than threshold', function (): void {
     $oldTimestamp = (int) (microtime(true) * 1000) - 150_000; // 150 seconds ago
 
     $mockClient = new MockClient([
@@ -30,7 +30,7 @@ test('isIdle returns true for sessions older than threshold', function () {
     expect($result)->toBeTrue();
 });
 
-test('isIdle returns false for recent sessions', function () {
+test('isIdle returns false for recent sessions', function (): void {
     $recentTimestamp = (int) (microtime(true) * 1000) - 30_000; // 30 seconds ago
 
     $mockClient = new MockClient([
@@ -50,7 +50,7 @@ test('isIdle returns false for recent sessions', function () {
     expect($result)->toBeFalse();
 });
 
-test('isActive returns opposite of isIdle', function () {
+test('isActive returns opposite of isIdle', function (): void {
     $recentTimestamp = (int) (microtime(true) * 1000) - 30_000;
 
     $mockClient = new MockClient([
@@ -75,7 +75,7 @@ test('isActive returns opposite of isIdle', function () {
     expect($resource->isIdle('ses_123'))->toBeFalse();
 });
 
-test('getLastMessageText extracts text from message parts', function () {
+test('getLastMessageText extracts text from message parts', function (): void {
     $mockClient = new MockClient([
         MockResponse::make([
             [
@@ -113,7 +113,7 @@ test('getLastMessageText extracts text from message parts', function () {
     expect($text)->toBe('Task completed successfully.');
 });
 
-test('hasCompletionIndicators detects completion patterns', function () {
+test('hasCompletionIndicators detects completion patterns', function (): void {
     $mockClient = new MockClient([
         MockResponse::make([
             [
@@ -151,7 +151,7 @@ test('hasCompletionIndicators detects completion patterns', function () {
     expect($result)->toBeTrue();
 });
 
-test('hasCompletionIndicators returns false when no patterns match', function () {
+test('hasCompletionIndicators returns false when no patterns match', function (): void {
     $mockClient = new MockClient([
         MockResponse::make([
             [
@@ -189,7 +189,7 @@ test('hasCompletionIndicators returns false when no patterns match', function ()
     expect($result)->toBeFalse();
 });
 
-test('createAndPrompt creates session at correct workspace path', function () {
+test('createAndPrompt creates session at correct workspace path', function (): void {
     $workspacePath = '/home/user/projects/my-app';
 
     $mockClient = new MockClient([
@@ -249,7 +249,7 @@ test('createAndPrompt creates session at correct workspace path', function () {
 
 });
 
-test('createAndPrompt includes workspace path in task meta', function () {
+test('createAndPrompt includes workspace path in task meta', function (): void {
     $workspacePath = '/var/www/project';
 
     $mockClient = new MockClient([

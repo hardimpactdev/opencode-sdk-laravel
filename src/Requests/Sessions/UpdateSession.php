@@ -23,7 +23,7 @@ class UpdateSession extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/session/{$this->id}";
+        return sprintf('/session/%s', $this->id);
     }
 
     protected function defaultQuery(): array

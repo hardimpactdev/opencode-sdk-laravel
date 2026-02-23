@@ -18,7 +18,7 @@ class UnrevertSession extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/session/{$this->id}/unrevert";
+        return sprintf('/session/%s/unrevert', $this->id);
     }
 
     protected function defaultQuery(): array

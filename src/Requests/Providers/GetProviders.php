@@ -20,7 +20,7 @@ class GetProviders extends Request
     public function createDtoFromResponse(Response $response): array
     {
         return array_map(
-            fn (array $data) => Provider::from($data),
+            Provider::from(...),
             (array) $response->json(),
         );
     }

@@ -280,7 +280,7 @@ class SessionResource extends BaseResource
 
         foreach ($patterns as $pattern) {
             if (@preg_match($pattern, '') === false) {
-                throw new \InvalidArgumentException("Invalid regex pattern: {$pattern}");
+                throw new \InvalidArgumentException('Invalid regex pattern: '.$pattern);
             }
 
             if (preg_match($pattern, $text)) {

@@ -18,7 +18,7 @@ class UnshareSession extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/session/{$this->id}/share";
+        return sprintf('/session/%s/share', $this->id);
     }
 
     protected function defaultQuery(): array

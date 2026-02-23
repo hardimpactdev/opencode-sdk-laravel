@@ -14,35 +14,35 @@ use HardImpact\OpenCode\Requests\Sessions\SendMessageAsync;
 use HardImpact\OpenCode\Requests\Sessions\UpdateSession;
 use Saloon\Enums\Method;
 
-it('builds CreateSession request correctly', function () {
+it('builds CreateSession request correctly', function (): void {
     $request = new CreateSession('/path/to/project', 'My Session');
 
     expect($request->resolveEndpoint())->toBe('/session');
     expect($request->getMethod())->toBe(Method::POST);
 });
 
-it('builds GetSession request correctly', function () {
+it('builds GetSession request correctly', function (): void {
     $request = new GetSession('ses_123');
 
     expect($request->resolveEndpoint())->toBe('/session/ses_123');
     expect($request->getMethod())->toBe(Method::GET);
 });
 
-it('builds ListSessions request correctly', function () {
+it('builds ListSessions request correctly', function (): void {
     $request = new ListSessions;
 
     expect($request->resolveEndpoint())->toBe('/session');
     expect($request->getMethod())->toBe(Method::GET);
 });
 
-it('builds DeleteSession request correctly', function () {
+it('builds DeleteSession request correctly', function (): void {
     $request = new DeleteSession('ses_123');
 
     expect($request->resolveEndpoint())->toBe('/session/ses_123');
     expect($request->getMethod())->toBe(Method::DELETE);
 });
 
-it('builds SendMessage request correctly', function () {
+it('builds SendMessage request correctly', function (): void {
     $request = new SendMessage(
         id: 'ses_123',
         providerID: 'anthropic',
@@ -54,7 +54,7 @@ it('builds SendMessage request correctly', function () {
     expect($request->getMethod())->toBe(Method::POST);
 });
 
-it('builds SendMessageAsync request correctly', function () {
+it('builds SendMessageAsync request correctly', function (): void {
     $request = new SendMessageAsync(
         id: 'ses_123',
         providerID: 'anthropic',
@@ -66,14 +66,14 @@ it('builds SendMessageAsync request correctly', function () {
     expect($request->getMethod())->toBe(Method::POST);
 });
 
-it('builds GetMessages request correctly', function () {
+it('builds GetMessages request correctly', function (): void {
     $request = new GetMessages('ses_123');
 
     expect($request->resolveEndpoint())->toBe('/session/ses_123/message');
     expect($request->getMethod())->toBe(Method::GET);
 });
 
-it('builds GetMessages request with directory parameter', function () {
+it('builds GetMessages request with directory parameter', function (): void {
     $request = new GetMessages('ses_123', '/path/to/project');
 
     expect($request->resolveEndpoint())->toBe('/session/ses_123/message');
@@ -81,35 +81,35 @@ it('builds GetMessages request with directory parameter', function () {
     expect($request->query()->get('directory'))->toBe('/path/to/project');
 });
 
-it('builds AnswerQuestion request correctly', function () {
+it('builds AnswerQuestion request correctly', function (): void {
     $request = new AnswerQuestion('ses_123', 'perm_456', 'always');
 
     expect($request->resolveEndpoint())->toBe('/session/ses_123/permissions/perm_456');
     expect($request->getMethod())->toBe(Method::POST);
 });
 
-it('builds RejectQuestion request correctly', function () {
+it('builds RejectQuestion request correctly', function (): void {
     $request = new RejectQuestion('ses_123', 'perm_456');
 
     expect($request->resolveEndpoint())->toBe('/session/ses_123/permissions/perm_456');
     expect($request->getMethod())->toBe(Method::POST);
 });
 
-it('builds UpdateSession request correctly', function () {
+it('builds UpdateSession request correctly', function (): void {
     $request = new UpdateSession('ses_123', 'New Title');
 
     expect($request->resolveEndpoint())->toBe('/session/ses_123');
     expect($request->getMethod())->toBe(Method::PATCH);
 });
 
-it('builds RunCommand request correctly', function () {
+it('builds RunCommand request correctly', function (): void {
     $request = new RunCommand('ses_123', 'compact', 'some args');
 
     expect($request->resolveEndpoint())->toBe('/session/ses_123/command');
     expect($request->getMethod())->toBe(Method::POST);
 });
 
-it('builds GetProviders request correctly', function () {
+it('builds GetProviders request correctly', function (): void {
     $request = new GetProviders;
 
     expect($request->resolveEndpoint())->toBe('/config/providers');

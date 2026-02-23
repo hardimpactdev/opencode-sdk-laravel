@@ -16,10 +16,8 @@ class OpenCodeServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->singleton(OpenCode::class, function () {
-            return new OpenCode(
-                baseUrl: config('opencode.base_url'),
-            );
-        });
+        $this->app->singleton(OpenCode::class, fn (): \HardImpact\OpenCode\OpenCode => new OpenCode(
+            baseUrl: config('opencode.base_url'),
+        ));
     }
 }

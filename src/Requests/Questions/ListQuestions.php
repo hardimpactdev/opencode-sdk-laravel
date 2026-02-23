@@ -20,7 +20,7 @@ class ListQuestions extends Request
     public function createDtoFromResponse(Response $response): array
     {
         return array_map(
-            fn (array $data) => Question::from($data),
+            Question::from(...),
             (array) $response->json(),
         );
     }

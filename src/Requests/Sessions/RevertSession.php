@@ -24,7 +24,7 @@ class RevertSession extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/session/{$this->id}/revert";
+        return sprintf('/session/%s/revert', $this->id);
     }
 
     protected function defaultQuery(): array

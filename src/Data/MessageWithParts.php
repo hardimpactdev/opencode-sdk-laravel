@@ -21,7 +21,7 @@ class MessageWithParts extends Data
 
         return new self(
             info: $info,
-            parts: array_map(fn (array $part) => Part::from($part), $data['parts'] ?? []),
+            parts: array_map(Part::from(...), $data['parts'] ?? []),
         );
     }
 }

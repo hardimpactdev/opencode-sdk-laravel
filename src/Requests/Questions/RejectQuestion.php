@@ -21,7 +21,7 @@ class RejectQuestion extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/session/{$this->sessionId}/permissions/{$this->permissionId}";
+        return sprintf('/session/%s/permissions/%s', $this->sessionId, $this->permissionId);
     }
 
     protected function defaultQuery(): array

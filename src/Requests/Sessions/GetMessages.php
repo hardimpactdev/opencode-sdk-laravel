@@ -18,7 +18,7 @@ class GetMessages extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/session/{$this->id}/message";
+        return sprintf('/session/%s/message', $this->id);
     }
 
     protected function defaultQuery(): array
@@ -32,7 +32,7 @@ class GetMessages extends Request
     public function createDtoFromResponse(Response $response): array
     {
         return array_map(
-            fn (array $data) => MessageWithParts::fromResponse($data),
+            MessageWithParts::fromResponse(...),
             (array) $response->json(),
         );
     }

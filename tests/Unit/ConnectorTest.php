@@ -6,19 +6,19 @@ use HardImpact\OpenCode\Resources\ProviderResource;
 use HardImpact\OpenCode\Resources\QuestionResource;
 use HardImpact\OpenCode\Resources\SessionResource;
 
-it('resolves default base url', function () {
+it('resolves default base url', function (): void {
     $connector = new OpenCode;
 
     expect($connector->resolveBaseUrl())->toBe('http://localhost:4096');
 });
 
-it('resolves custom base url', function () {
+it('resolves custom base url', function (): void {
     $connector = new OpenCode('http://localhost:9999');
 
     expect($connector->resolveBaseUrl())->toBe('http://localhost:9999');
 });
 
-it('provides resource accessors', function () {
+it('provides resource accessors', function (): void {
     $connector = new OpenCode;
 
     expect($connector->sessions())->toBeInstanceOf(SessionResource::class);

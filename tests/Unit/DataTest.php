@@ -11,7 +11,7 @@ use HardImpact\OpenCode\Enums\EventType;
 use HardImpact\OpenCode\Enums\MessageRole;
 use HardImpact\OpenCode\Enums\PartType;
 
-it('creates a Session from array', function () {
+it('creates a Session from array', function (): void {
     $session = Session::from([
         'id' => 'ses_123',
         'title' => 'Test Session',
@@ -26,7 +26,7 @@ it('creates a Session from array', function () {
     expect($session->parentID)->toBeNull();
 });
 
-it('creates a UserMessage from array', function () {
+it('creates a UserMessage from array', function (): void {
     $message = UserMessage::from([
         'id' => 'msg_001',
         'role' => 'user',
@@ -39,7 +39,7 @@ it('creates a UserMessage from array', function () {
     expect($message->sessionID)->toBe('ses_123');
 });
 
-it('creates an AssistantMessage from array', function () {
+it('creates an AssistantMessage from array', function (): void {
     $message = AssistantMessage::from([
         'id' => 'msg_002',
         'role' => 'assistant',
@@ -66,7 +66,7 @@ it('creates an AssistantMessage from array', function () {
     expect($message->error)->toBeNull();
 });
 
-it('creates a Part from array', function () {
+it('creates a Part from array', function (): void {
     $part = Part::from([
         'id' => 'part_001',
         'type' => 'text',
@@ -80,7 +80,7 @@ it('creates a Part from array', function () {
     expect($part->text)->toBe('Hello world');
 });
 
-it('creates a tool Part from array', function () {
+it('creates a tool Part from array', function (): void {
     $part = Part::from([
         'id' => 'part_002',
         'type' => 'tool',
@@ -96,7 +96,7 @@ it('creates a tool Part from array', function () {
     expect($part->state['status'])->toBe('completed');
 });
 
-it('creates an Event from array', function () {
+it('creates an Event from array', function (): void {
     $event = Event::from([
         'type' => 'session.idle',
         'properties' => ['sessionID' => 'ses_123'],
@@ -106,7 +106,7 @@ it('creates an Event from array', function () {
     expect($event->properties)->toBe(['sessionID' => 'ses_123']);
 });
 
-it('creates a Question from array', function () {
+it('creates a Question from array', function (): void {
     $question = Question::from([
         'id' => 'perm_001',
         'sessionID' => 'ses_123',
@@ -120,7 +120,7 @@ it('creates a Question from array', function () {
     expect($question->type)->toBe('bash');
 });
 
-it('creates a MessageWithParts from response data', function () {
+it('creates a MessageWithParts from response data', function (): void {
     $data = [
         'info' => [
             'id' => 'msg_002',

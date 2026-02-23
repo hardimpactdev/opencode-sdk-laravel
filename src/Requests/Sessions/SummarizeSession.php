@@ -22,7 +22,7 @@ class SummarizeSession extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/session/{$this->id}/summarize";
+        return sprintf('/session/%s/summarize', $this->id);
     }
 
     protected function defaultQuery(): array
