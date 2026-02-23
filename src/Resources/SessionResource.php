@@ -65,9 +65,9 @@ class SessionResource extends BaseResource
     }
 
     /** @return Session[] */
-    public function list(): array
+    public function list(?string $directory = null): array
     {
-        return $this->connector->send(new ListSessions)->dto();
+        return $this->connector->send(new ListSessions($directory))->dto();
     }
 
     public function get(string $id, ?string $directory = null): Session
@@ -75,19 +75,19 @@ class SessionResource extends BaseResource
         return $this->connector->send(new GetSession($id, $directory))->dto();
     }
 
-    public function update(string $id, ?string $title = null): Session
+    public function update(string $id, ?string $title = null, ?string $directory = null): Session
     {
-        return $this->connector->send(new UpdateSession($id, $title))->dto();
+        return $this->connector->send(new UpdateSession($id, $title, $directory))->dto();
     }
 
-    public function delete(string $id): bool
+    public function delete(string $id, ?string $directory = null): bool
     {
-        return $this->connector->send(new DeleteSession($id))->successful();
+        return $this->connector->send(new DeleteSession($id, $directory))->successful();
     }
 
-    public function abort(string $id): bool
+    public function abort(string $id, ?string $directory = null): bool
     {
-        return $this->connector->send(new AbortSession($id))->successful();
+        return $this->connector->send(new AbortSession($id, $directory))->successful();
     }
 
     public function sendMessage(
@@ -198,14 +198,14 @@ class SessionResource extends BaseResource
         )->dto();
     }
 
-    public function share(string $id): Session
+    public function share(string $id, ?string $directory = null): Session
     {
-        return $this->connector->send(new ShareSession($id))->dto();
+        return $this->connector->send(new ShareSession($id, $directory))->dto();
     }
 
-    public function unshare(string $id): Session
+    public function unshare(string $id, ?string $directory = null): Session
     {
-        return $this->connector->send(new UnshareSession($id))->dto();
+        return $this->connector->send(new UnshareSession($id, $directory))->dto();
     }
 
     /**

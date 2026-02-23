@@ -13,11 +13,17 @@ class UnshareSession extends Request
 
     public function __construct(
         protected string $id,
+        protected ?string $directory = null,
     ) {}
 
     public function resolveEndpoint(): string
     {
         return "/session/{$this->id}/share";
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_filter(['directory' => $this->directory]);
     }
 
     public function createDtoFromResponse(Response $response): Session

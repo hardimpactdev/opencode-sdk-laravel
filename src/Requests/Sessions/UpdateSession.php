@@ -18,11 +18,17 @@ class UpdateSession extends Request implements HasBody
     public function __construct(
         protected string $id,
         protected ?string $title = null,
+        protected ?string $directory = null,
     ) {}
 
     public function resolveEndpoint(): string
     {
         return "/session/{$this->id}";
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_filter(['directory' => $this->directory]);
     }
 
     protected function defaultBody(): array
