@@ -3,6 +3,7 @@
 namespace HardImpact\OpenCode;
 
 use HardImpact\OpenCode\Resources\EventResource;
+use HardImpact\OpenCode\Resources\ProjectResource;
 use HardImpact\OpenCode\Resources\ProviderResource;
 use HardImpact\OpenCode\Resources\QuestionResource;
 use HardImpact\OpenCode\Resources\SessionResource;
@@ -46,6 +47,11 @@ class OpenCode extends Connector
         return $this->providers ??= new ProviderResource($this);
     }
 
+    public function projects(): ProjectResource
+    {
+        return $this->projects ??= new ProjectResource($this);
+    }
+
     private ?SessionResource $sessions = null;
 
     private ?EventResource $events = null;
@@ -53,4 +59,6 @@ class OpenCode extends Connector
     private ?QuestionResource $questions = null;
 
     private ?ProviderResource $providers = null;
+
+    private ?ProjectResource $projects = null;
 }

@@ -187,6 +187,24 @@ foreach ($opencode->events()->stream() as $event) {
 }
 ```
 
+### Projects
+
+```php
+// List all projects
+$projects = $opencode->projects()->list();
+
+// Get current project
+$project = $opencode->projects()->current();
+
+// Update project properties (name, icon, startup script)
+$project = $opencode->projects()->update(
+    id: 'proj_xxx',
+    name: 'My Project',
+    icon: ['override' => 'rocket', 'color' => '#ff0000'],
+    commands: ['start' => 'php artisan serve'],
+);
+```
+
 ### Providers
 
 ```php
@@ -281,8 +299,9 @@ Comparison with the official OpenCode SDKs ([JS](https://github.com/anomalyco/op
 
 | Endpoint | Laravel | JS | Go |
 |----------|:-------:|:--:|:--:|
-| List projects | - | - | Y |
-| Current project | - | - | Y |
+| List projects | Y | - | Y |
+| Current project | Y | - | Y |
+| Update project | Y | - | - |
 
 ### Command
 
