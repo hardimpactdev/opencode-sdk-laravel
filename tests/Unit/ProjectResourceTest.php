@@ -110,6 +110,33 @@ test('update modifies project properties', function (): void {
     expect($project->commands)->toBe(['start' => 'php artisan serve']);
 });
 
+test('update can set sandboxes', function (): void {
+    $mockClient = new MockClient([
+        MockResponse::make([
+            'id' => 'proj_1',
+            'worktree' => '/home/user/project',
+            'vcs' => 'git',
+            'name' => null,
+            'icon' => null,
+            'commands' => null,
+            'time' => ['created' => 1700000000, 'updated' => 1700000010],
+            'sandboxes' => ['/home/user/project/.worktrees/task-1'],
+        ]),
+    ]);
+
+    $connector = new OpenCode('http://localhost:3000');
+    $connector->withMockClient($mockClient);
+
+    $resource = new ProjectResource($connector);
+    $project = $resource->update(
+        id: 'proj_1',
+        sandboxes: ['/home/user/project/.worktrees/task-1'],
+    );
+
+    expect($project)->toBeInstanceOf(Project::class);
+    expect($project->sandboxes)->toBe(['/home/user/project/.worktrees/task-1']);
+});
+
 test('projects accessor is available on connector', function (): void {
     $connector = new OpenCode('http://localhost:3000');
 

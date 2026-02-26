@@ -20,6 +20,7 @@ class UpdateProject extends Request implements HasBody
         protected ?string $name = null,
         protected ?array $icon = null,
         protected ?array $commands = null,
+        protected ?array $sandboxes = null,
         protected ?string $directory = null,
     ) {}
 
@@ -39,6 +40,7 @@ class UpdateProject extends Request implements HasBody
             'name' => $this->name,
             'icon' => $this->icon,
             'commands' => $this->commands,
+            'sandboxes' => $this->sandboxes,
         ]);
     }
 

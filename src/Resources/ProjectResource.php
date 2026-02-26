@@ -26,10 +26,11 @@ class ProjectResource extends BaseResource
         ?string $name = null,
         ?array $icon = null,
         ?array $commands = null,
+        ?array $sandboxes = null,
         ?string $directory = null,
     ): Project {
         return $this->connector->send(
-            new UpdateProject($id, $name, $icon, $commands, $directory)
+            new UpdateProject($id, $name, $icon, $commands, $sandboxes, $directory)
         )->dto();
     }
 }
