@@ -8,6 +8,7 @@ enum SessionStatus: string
 {
     case Created = 'created';
     case Active = 'active';
+    case Idle = 'idle';
     case Interrupted = 'interrupted';
     case Recovered = 'recovered';
     case Completed = 'completed';
@@ -18,6 +19,7 @@ enum SessionStatus: string
         return match ($this) {
             self::Created => 'Created',
             self::Active => 'Active',
+            self::Idle => 'Idle',
             self::Interrupted => 'Interrupted',
             self::Recovered => 'Recovered',
             self::Completed => 'Completed',

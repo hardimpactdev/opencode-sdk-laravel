@@ -38,6 +38,13 @@ class OpenCodeSessionFactory extends Factory
         ]);
     }
 
+    public function idle(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => SessionStatus::Idle->value,
+        ]);
+    }
+
     public function interrupted(): static
     {
         return $this->state(fn (): array => [

@@ -4,7 +4,6 @@ namespace HardImpact\OpenCode\Resources;
 
 use HardImpact\OpenCode\Data\MessageWithParts;
 use HardImpact\OpenCode\Data\Session;
-use HardImpact\OpenCode\Enums\PartType;
 use HardImpact\OpenCode\Requests\Sessions\AbortSession;
 use HardImpact\OpenCode\Requests\Sessions\CreateSession;
 use HardImpact\OpenCode\Requests\Sessions\DeleteSession;
@@ -206,88 +205,5 @@ class SessionResource extends BaseResource
     public function unshare(string $id, ?string $directory = null): Session
     {
         return $this->connector->send(new UnshareSession($id, $directory))->dto();
-    }
-
-    /**
-     * Check if a session is idle (not updated within threshold).
-     */
-    public function isIdle(string $id, ?string $directory = null, int $thresholdMs = 120_000): bool
-    {
-        $session = $this->get($id, $directory);
-        $updatedAt = $session->time['updated'] ?? null;
-
-        if (! is_numeric($updatedAt)) {
-            return false;
-        }
-
-        $nowMs = (int) (microtime(true) * 1000);
-        $ageMs = $nowMs - (int) $updatedAt;
-
-        return $ageMs > $thresholdMs;
-    }
-
-    /**
-     * Check if a session is active (updated within threshold).
-     */
-    public function isActive(string $id, ?string $directory = null, int $thresholdMs = 120_000): bool
-    {
-        return ! $this->isIdle($id, $directory, $thresholdMs);
-    }
-
-    /**
-     * Get text content from the last message in a session.
-     */
-    public function getLastMessageText(string $id, ?string $directory = null): string
-    {
-        $messages = $this->messages($id, $directory);
-
-        if (empty($messages)) {
-            return '';
-        }
-
-        $lastMessage = $messages[array_key_last($messages)];
-
-        $text = '';
-        foreach ($lastMessage->parts as $part) {
-            if ($part->type === PartType::Text) {
-                $text .= $part->text ?? '';
-            }
-        }
-
-        return $text;
-    }
-
-    /**
-     * Check if the last message in a session contains completion indicators.
-     *
-     * @param  array<string>  $patterns  Regex patterns to match (default: common completion patterns)
-     */
-    public function hasCompletionIndicators(string $id, ?string $directory = null, array $patterns = []): bool
-    {
-        if (empty($patterns)) {
-            $patterns = [
-                '/completed successfully/i',
-                '/task.*complete/i',
-                '/Summary:/i',
-            ];
-        }
-
-        $text = $this->getLastMessageText($id, $directory);
-
-        if (empty($text)) {
-            return false;
-        }
-
-        foreach ($patterns as $pattern) {
-            if (@preg_match($pattern, '') === false) {
-                throw new \InvalidArgumentException('Invalid regex pattern: '.$pattern);
-            }
-
-            if (preg_match($pattern, $text)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

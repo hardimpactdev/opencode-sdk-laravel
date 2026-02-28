@@ -20,5 +20,7 @@ class OpenCodeServiceProvider extends PackageServiceProvider
         $this->app->singleton(OpenCode::class, fn (): \HardImpact\OpenCode\OpenCode => new OpenCode(
             baseUrl: config('opencode.base_url'),
         ));
+
+        $this->app->singleton(SessionManager::class);
     }
 }

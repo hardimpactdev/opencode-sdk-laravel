@@ -58,6 +58,36 @@ class OpenCodeSession extends Model
         return $this->morphTo();
     }
 
+    public function isIdle(): bool
+    {
+        return $this->status === SessionStatus::Idle;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === SessionStatus::Active;
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->status === SessionStatus::Completed;
+    }
+
+    public function isFailed(): bool
+    {
+        return $this->status === SessionStatus::Failed;
+    }
+
+    public function isTerminal(): bool
+    {
+        return $this->isCompleted() || $this->isFailed();
+    }
+
+    public function markAsIdle(): void
+    {
+        $this->update(['status' => SessionStatus::Idle]);
+    }
+
     public function markAsInterrupted(): void
     {
         $this->update(['status' => SessionStatus::Interrupted]);
