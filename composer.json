@@ -21,7 +21,8 @@
         "saloonphp/saloon": "^3.0",
         "spatie/laravel-data": "^4.0",
         "spatie/laravel-package-tools": "^1.16",
-        "illuminate/contracts": "^11.0||^12.0"
+        "illuminate/contracts": "^11.0||^12.0",
+        "illuminate/database": "^11.0||^12.0"
     },
     "require-dev": {
         "larastan/larastan": "^3.0",
@@ -38,7 +39,8 @@
     },
     "autoload": {
         "psr-4": {
-            "HardImpact\\OpenCode\\": "src/"
+            "HardImpact\\OpenCode\\": "src/",
+            "HardImpact\\OpenCode\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {

@@ -11,7 +11,8 @@ class OpenCodeServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('opencode')
-            ->hasConfigFile();
+            ->hasConfigFile()
+            ->hasMigration('create_open_code_sessions_table');
     }
 
     public function packageRegistered(): void
