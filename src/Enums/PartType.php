@@ -12,4 +12,5 @@ enum PartType: string
     case Snapshot = 'snapshot';
     case Patch = 'patch';
     case Reasoning = 'reasoning';
+    case Unknown = 'unknown';
 }

@@ -13,8 +13,13 @@ final readonly class SessionAssessment
         public ?string $reason = null,
     ) {}
 
-    public function isTerminal(): bool
+    public function shouldComplete(): bool
     {
-        return in_array($this->state, [SessionState::Completed, SessionState::Idle, SessionState::Missing], true);
+        return in_array($this->state, [SessionState::Completed, SessionState::Idle], true);
+    }
+
+    public function isMissing(): bool
+    {
+        return $this->state === SessionState::Missing;
     }
 }

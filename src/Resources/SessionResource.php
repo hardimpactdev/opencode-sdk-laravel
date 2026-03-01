@@ -28,7 +28,7 @@ class SessionResource extends BaseResource
     {
         return $this->connector->send(
             new CreateSession($directory, $title, $parentID)
-        )->dto();
+        )->throw()->dto();
     }
 
     /**
@@ -66,17 +66,17 @@ class SessionResource extends BaseResource
     /** @return Session[] */
     public function list(?string $directory = null): array
     {
-        return $this->connector->send(new ListSessions($directory))->dto();
+        return $this->connector->send(new ListSessions($directory))->throw()->dto();
     }
 
     public function get(string $id, ?string $directory = null): Session
     {
-        return $this->connector->send(new GetSession($id, $directory))->dto();
+        return $this->connector->send(new GetSession($id, $directory))->throw()->dto();
     }
 
     public function update(string $id, ?string $title = null, ?string $directory = null): Session
     {
-        return $this->connector->send(new UpdateSession($id, $title, $directory))->dto();
+        return $this->connector->send(new UpdateSession($id, $title, $directory))->throw()->dto();
     }
 
     public function delete(string $id, ?string $directory = null): bool
@@ -103,7 +103,7 @@ class SessionResource extends BaseResource
 
         return $this->connector->send(
             new SendMessage($id, $providerID, $modelID, $parts, $directory, $messageID, $system, $tools)
-        )->dto();
+        )->throw()->dto();
     }
 
     public function sendMessageWithParts(
@@ -118,7 +118,7 @@ class SessionResource extends BaseResource
     ): MessageWithParts {
         return $this->connector->send(
             new SendMessage($id, $providerID, $modelID, $parts, $directory, $messageID, $system, $tools)
-        )->dto();
+        )->throw()->dto();
     }
 
     public function sendMessageAsync(
@@ -141,7 +141,7 @@ class SessionResource extends BaseResource
     /** @return MessageWithParts[] */
     public function messages(string $id, ?string $directory = null): array
     {
-        return $this->connector->send(new GetMessages($id, $directory))->dto();
+        return $this->connector->send(new GetMessages($id, $directory))->throw()->dto();
     }
 
     public function init(
@@ -175,12 +175,12 @@ class SessionResource extends BaseResource
     ): Session {
         return $this->connector->send(
             new RevertSession($id, $messageID, $directory, $partID)
-        )->dto();
+        )->throw()->dto();
     }
 
     public function unrevert(string $id, ?string $directory = null): Session
     {
-        return $this->connector->send(new UnrevertSession($id, $directory))->dto();
+        return $this->connector->send(new UnrevertSession($id, $directory))->throw()->dto();
     }
 
     public function command(
@@ -194,16 +194,16 @@ class SessionResource extends BaseResource
     ): MessageWithParts {
         return $this->connector->send(
             new RunCommand($id, $command, $arguments, $directory, $agent, $messageID, $model)
-        )->dto();
+        )->throw()->dto();
     }
 
     public function share(string $id, ?string $directory = null): Session
     {
-        return $this->connector->send(new ShareSession($id, $directory))->dto();
+        return $this->connector->send(new ShareSession($id, $directory))->throw()->dto();
     }
 
     public function unshare(string $id, ?string $directory = null): Session
     {
-        return $this->connector->send(new UnshareSession($id, $directory))->dto();
+        return $this->connector->send(new UnshareSession($id, $directory))->throw()->dto();
     }
 }

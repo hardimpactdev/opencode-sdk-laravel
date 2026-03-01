@@ -8,4 +8,5 @@ enum ToolStatus: string
     case Running = 'running';
     case Completed = 'completed';
     case Error = 'error';
+    case Unknown = 'unknown';
 }

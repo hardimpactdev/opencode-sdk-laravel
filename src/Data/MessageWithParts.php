@@ -21,13 +21,23 @@ class MessageWithParts extends Data
             throw new \InvalidArgumentException('Message info must be an array, got '.gettype($infoData));
         }
 
-        $info = ($infoData['role'] ?? '') === 'assistant'
+        $role = $infoData['role'] ?? '';
+        if ($role !== '' && \HardImpact\OpenCode\Enums\MessageRole::tryFrom($role) === null) {
+            $infoData['role'] = 'unknown';
+        }
+
+        $info = $role === 'assistant'
             ? AssistantMessage::from($infoData)
             : UserMessage::from($infoData);
 
+        $parts = array_filter(
+            array_map(Part::fromTolerant(...), $data['parts'] ?? []),
+            fn (?Part $part) => $part !== null,
+        );
+
         return new self(
             info: $info,
-            parts: array_map(Part::from(...), $data['parts'] ?? []),
+            parts: array_values($parts),
         );
     }
 }

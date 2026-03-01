@@ -13,12 +13,12 @@ class ProjectResource extends BaseResource
     /** @return Project[] */
     public function list(?string $directory = null): array
     {
-        return $this->connector->send(new ListProjects($directory))->dto();
+        return $this->connector->send(new ListProjects($directory))->throw()->dto();
     }
 
     public function current(?string $directory = null): Project
     {
-        return $this->connector->send(new GetCurrentProject($directory))->dto();
+        return $this->connector->send(new GetCurrentProject($directory))->throw()->dto();
     }
 
     public function update(
@@ -31,6 +31,6 @@ class ProjectResource extends BaseResource
     ): Project {
         return $this->connector->send(
             new UpdateProject($id, $name, $icon, $commands, $sandboxes, $directory)
-        )->dto();
+        )->throw()->dto();
     }
 }

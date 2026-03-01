@@ -34,7 +34,8 @@ describe('assess', function (): void {
 
         expect($assessment)->toBeInstanceOf(SessionAssessment::class);
         expect($assessment->state)->toBe(SessionState::Missing);
-        expect($assessment->isTerminal())->toBeTrue();
+        expect($assessment->isMissing())->toBeTrue();
+        expect($assessment->shouldComplete())->toBeFalse();
     });
 
     test('returns Completed when file changes and stale', function (): void {
@@ -53,7 +54,7 @@ describe('assess', function (): void {
         $assessment = $this->manager->assess($session);
 
         expect($assessment->state)->toBe(SessionState::Completed);
-        expect($assessment->isTerminal())->toBeTrue();
+        expect($assessment->shouldComplete())->toBeTrue();
         expect($assessment->reason)->toContain('File changes');
     });
 
@@ -119,7 +120,7 @@ describe('assess', function (): void {
         $assessment = $this->manager->assess($session);
 
         expect($assessment->state)->toBe(SessionState::Idle);
-        expect($assessment->isTerminal())->toBeTrue();
+        expect($assessment->shouldComplete())->toBeTrue();
     });
 
     test('returns Idle when state is null and exceeds fallback threshold', function (): void {
@@ -145,6 +146,26 @@ describe('assess', function (): void {
         expect($assessment->reason)->toContain('state is null');
     });
 
+    test('returns Completed when API state is completed regardless of age', function (): void {
+        $recentTimestamp = (int) (microtime(true) * 1000) - 5_000; // 5s ago (very recent)
+
+        MockClient::global([
+            MockResponse::make([
+                'id' => 'ses_123',
+                'title' => 'Test',
+                'time' => ['updated' => $recentTimestamp],
+                'state' => 'completed',
+            ]),
+        ]);
+
+        $session = createTestSession();
+        $assessment = $this->manager->assess($session);
+
+        expect($assessment->state)->toBe(SessionState::Completed);
+        expect($assessment->shouldComplete())->toBeTrue();
+        expect($assessment->reason)->toContain('API reports session state');
+    });
+
     test('returns Active for recently updated session', function (): void {
         $recentTimestamp = (int) (microtime(true) * 1000) - 10_000; // 10s ago
 
@@ -161,7 +182,7 @@ describe('assess', function (): void {
         $assessment = $this->manager->assess($session);
 
         expect($assessment->state)->toBe(SessionState::Active);
-        expect($assessment->isTerminal())->toBeFalse();
+        expect($assessment->shouldComplete())->toBeFalse();
     });
 });
 
@@ -231,6 +252,49 @@ describe('lifecycle transitions', function (): void {
         expect($fresh->status)->toBe(SessionStatus::Recovered);
         expect($fresh->recovery_attempts)->toBe(1);
         Event::assertDispatched(SessionRecovered::class);
+    });
+
+    test('complete is idempotent — skips already completed sessions', function (): void {
+        Event::fake([SessionCompleted::class]);
+        $session = createTestSession(['status' => SessionStatus::Completed->value, 'ended_at' => now()]);
+
+        $this->manager->complete($session);
+
+        Event::assertNotDispatched(SessionCompleted::class);
+    });
+
+    test('complete is idempotent — skips failed sessions', function (): void {
+        Event::fake([SessionCompleted::class]);
+        $session = createTestSession(['status' => SessionStatus::Failed->value, 'ended_at' => now()]);
+
+        $this->manager->complete($session);
+
+        Event::assertNotDispatched(SessionCompleted::class);
+    });
+
+    test('recover only works on interrupted sessions', function (): void {
+        Event::fake([SessionRecovered::class]);
+        $session = createTestSession(['status' => SessionStatus::Active->value]);
+
+        $this->manager->recover($session);
+
+        expect($session->fresh()->recovery_attempts)->toBe(0);
+        Event::assertNotDispatched(SessionRecovered::class);
+    });
+
+    test('recover does not double-increment recovery attempts', function (): void {
+        Event::fake([SessionRecovered::class]);
+        $session = createTestSession(['status' => SessionStatus::Interrupted->value]);
+
+        $this->manager->recover($session);
+        $session->refresh();
+
+        // After recovery, status is Recovered — second call should be a no-op
+        $this->manager->recover($session);
+        $session->refresh();
+
+        expect($session->recovery_attempts)->toBe(1);
+        Event::assertDispatched(SessionRecovered::class, 1);
     });
 });
 

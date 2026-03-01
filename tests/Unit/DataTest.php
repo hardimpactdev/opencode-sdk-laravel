@@ -121,6 +121,76 @@ it('creates a Question from array', function (): void {
     expect($question->type)->toBe('bash');
 });
 
+it('handles unknown part types gracefully', function (): void {
+    $data = [
+        'info' => [
+            'id' => 'msg_003',
+            'role' => 'assistant',
+            'sessionID' => 'ses_123',
+            'modelID' => 'test',
+            'providerID' => 'test',
+            'mode' => 'default',
+            'cost' => 0.0,
+            'path' => [],
+            'time' => ['created' => 1700000000],
+            'tokens' => ['input' => 0, 'output' => 0, 'reasoning' => 0, 'cache' => ['read' => 0, 'write' => 0]],
+        ],
+        'parts' => [
+            [
+                'id' => 'part_001',
+                'type' => 'text',
+                'messageID' => 'msg_003',
+                'sessionID' => 'ses_123',
+                'text' => 'Hello!',
+            ],
+            [
+                'id' => 'part_002',
+                'type' => 'image',
+                'messageID' => 'msg_003',
+                'sessionID' => 'ses_123',
+            ],
+        ],
+    ];
+
+    $messageWithParts = MessageWithParts::fromResponse($data);
+
+    expect($messageWithParts->parts)->toHaveCount(2);
+    expect($messageWithParts->parts[0]->type)->toBe(PartType::Text);
+    expect($messageWithParts->parts[1]->type)->toBe(PartType::Unknown);
+});
+
+it('handles unknown message roles gracefully', function (): void {
+    $data = [
+        'info' => [
+            'id' => 'msg_004',
+            'role' => 'system',
+            'sessionID' => 'ses_123',
+            'time' => ['created' => 1700000000],
+        ],
+        'parts' => [],
+    ];
+
+    $messageWithParts = MessageWithParts::fromResponse($data);
+
+    expect($messageWithParts->info)->toBeInstanceOf(UserMessage::class);
+    expect($messageWithParts->info->role)->toBe(MessageRole::Unknown);
+});
+
+it('handles unknown tool status gracefully', function (): void {
+    $part = Part::fromTolerant([
+        'id' => 'part_003',
+        'type' => 'tool',
+        'messageID' => 'msg_002',
+        'sessionID' => 'ses_123',
+        'tool' => 'bash',
+        'callID' => 'call_001',
+        'state' => ['status' => 'cancelled', 'title' => 'Test'],
+    ]);
+
+    expect($part)->not->toBeNull();
+    expect($part->state->status)->toBe(\HardImpact\OpenCode\Enums\ToolStatus::Unknown);
+});
+
 it('creates a MessageWithParts from response data', function (): void {
     $data = [
         'info' => [

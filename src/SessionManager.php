@@ -15,7 +15,6 @@ use HardImpact\OpenCode\Events\SessionRecovered;
 use HardImpact\OpenCode\Models\OpenCodeSession;
 use Illuminate\Support\Facades\Config;
 use Saloon\Exceptions\Request\RequestException;
-use Throwable;
 
 final class SessionManager
 {
@@ -24,11 +23,12 @@ final class SessionManager
      *
      * Detection chain:
      * 1. API session not found → Missing
-     * 2. File changes + stale > threshold → Completed
-     * 3. Completion indicators in last message → Completed
-     * 4. API idle check (stale > threshold) → Idle
-     * 5. state=null + stale > fallback threshold → Idle
-     * 6. Otherwise → Active
+     * 2. API reports terminal state (e.g. "completed") → Completed
+     * 3. File changes + stale > threshold → Completed
+     * 4. Completion indicators in last message → Completed
+     * 5. Known state + stale > threshold → Idle
+     * 6. state=null/empty + stale > fallback threshold → Idle
+     * 7. Otherwise → Active
      *
      * @param  array<string>  $completionPatterns  Regex patterns to match in last message
      */
@@ -57,6 +57,17 @@ final class SessionManager
             throw $e;
         }
 
+        // 2. Explicit API state → short-circuit on terminal states
+        if ($apiSession->state !== null && $apiSession->state !== '') {
+            $knownState = SessionState::tryFrom($apiSession->state);
+            if ($knownState === SessionState::Completed) {
+                return new SessionAssessment(
+                    state: SessionState::Completed,
+                    reason: sprintf('API reports session state as "%s"', $apiSession->state),
+                );
+            }
+        }
+
         // Calculate age
         $updatedAt = $apiSession->time['updated'] ?? null;
         $ageMs = null;
@@ -65,7 +76,7 @@ final class SessionManager
             $ageMs = $nowMs - (int) $updatedAt;
         }
 
-        // 2. File changes + stale → Completed
+        // 3. File changes + stale → Completed
         $hasFileChanges = isset($apiSession->summary) && (
             ($apiSession->summary['files'] ?? 0) > 0 ||
             ($apiSession->summary['additions'] ?? 0) > 0 ||
@@ -79,7 +90,7 @@ final class SessionManager
             );
         }
 
-        // 3. Completion indicators in last message → Completed
+        // 4. Completion indicators in last message → Completed
         if ($completionPatterns !== []) {
             try {
                 $lastMessageText = $this->getLastMessageText($sessions, $session->session_id, $workspace);
@@ -95,61 +106,88 @@ final class SessionManager
                     throw $e;
                 }
                 // 404 means no messages yet — continue to next heuristic
+            } catch (\ValueError) {
+                // Unknown enum value in message data — skip completion pattern check
+                // and fall through to staleness heuristics which don't need message content
             }
         }
 
-        // 4. Known state + stale > threshold → Idle
-        if ($apiSession->state !== null && $ageMs !== null && $ageMs > $staleThreshold) {
+        // 5. Known state + stale > threshold → Idle
+        if ($apiSession->state !== null && $apiSession->state !== '' && $ageMs !== null && $ageMs > $staleThreshold) {
             return new SessionAssessment(
                 state: SessionState::Idle,
                 reason: sprintf('Session stale for %dms (threshold: %dms)', $ageMs, $staleThreshold),
             );
         }
 
-        // 5. state=null + stale > fallback threshold → Idle
-        if ($apiSession->state === null && $ageMs !== null && $ageMs > $fallbackIdleThreshold) {
+        // 6. state=null/empty + stale > fallback threshold → Idle
+        if (($apiSession->state === null || $apiSession->state === '') && $ageMs !== null && $ageMs > $fallbackIdleThreshold) {
             return new SessionAssessment(
                 state: SessionState::Idle,
                 reason: sprintf('Session state is null and stale for %dms (fallback threshold: %dms)', $ageMs, $fallbackIdleThreshold),
             );
         }
 
-        // 6. Active
+        // 7. Active
         return new SessionAssessment(state: SessionState::Active);
     }
 
     public function activate(OpenCodeSession $session): void
     {
+        if ($session->isActive()) {
+            return;
+        }
+
         $session->update(['status' => \HardImpact\OpenCode\Enums\SessionStatus::Active]);
         event(new SessionActivated($session));
     }
 
     public function markIdle(OpenCodeSession $session): void
     {
+        if ($session->isIdle()) {
+            return;
+        }
+
         $session->markAsIdle();
         event(new SessionBecameIdle($session));
     }
 
     public function complete(OpenCodeSession $session): void
     {
+        if ($session->isTerminal()) {
+            return;
+        }
+
         $session->markAsCompleted();
         event(new SessionCompleted($session));
     }
 
     public function fail(OpenCodeSession $session, string $error): void
     {
+        if ($session->isTerminal()) {
+            return;
+        }
+
         $session->markAsFailed($error);
         event(new SessionFailed($session));
     }
 
     public function interrupt(OpenCodeSession $session): void
     {
+        if ($session->status === \HardImpact\OpenCode\Enums\SessionStatus::Interrupted) {
+            return;
+        }
+
         $session->markAsInterrupted();
         event(new SessionInterrupted($session));
     }
 
     public function recover(OpenCodeSession $session): void
     {
+        if ($session->status !== \HardImpact\OpenCode\Enums\SessionStatus::Interrupted) {
+            return;
+        }
+
         $session->markAsRecovered();
         event(new SessionRecovered($session));
     }

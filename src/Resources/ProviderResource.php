@@ -9,6 +9,6 @@ class ProviderResource extends BaseResource
 {
     public function list(): array
     {
-        return $this->connector->send(new GetProviders)->dto();
+        return $this->connector->send(new GetProviders)->throw()->dto();
     }
 }

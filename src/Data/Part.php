@@ -7,6 +7,23 @@ use Spatie\LaravelData\Data;
 
 class Part extends Data
 {
+    public static function fromTolerant(mixed $data): ?self
+    {
+        if (! is_array($data)) {
+            return null;
+        }
+
+        if (isset($data['type']) && PartType::tryFrom($data['type']) === null) {
+            $data['type'] = 'unknown';
+        }
+
+        if (isset($data['state']['status']) && \HardImpact\OpenCode\Enums\ToolStatus::tryFrom($data['state']['status']) === null) {
+            $data['state']['status'] = 'unknown';
+        }
+
+        return self::from($data);
+    }
+
     public function __construct(
         public string $id,
         public PartType $type,

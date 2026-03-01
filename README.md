@@ -211,6 +211,73 @@ $project = $opencode->projects()->update(
 $providers = $opencode->providers()->list();
 ```
 
+### Session Management
+
+The SDK includes an Eloquent model (`OpenCodeSession`) and a `SessionManager` for tracking and managing session lifecycles in your application.
+
+#### OpenCodeSession Model
+
+```php
+use HardImpact\OpenCode\Models\OpenCodeSession;
+
+// Create a session linked to any model via polymorphic relationship
+$session = OpenCodeSession::query()->create([
+    'sessionable_id' => $task->id,
+    'sessionable_type' => Task::class,
+    'session_id' => 'ses_xxx',
+    'workspace' => '/path/to/project',
+    'provider' => 'anthropic',
+    'model' => 'claude-sonnet-4-20250514',
+    'status' => 'created',
+]);
+
+// Status helpers
+$session->isActive();    // true when status is Active
+$session->isIdle();      // true when status is Idle
+$session->isTerminal();  // true when status is Completed or Failed
+```
+
+#### SessionManager
+
+The `SessionManager` provides session lifecycle management with assessment heuristics and Laravel event dispatching.
+
+```php
+use HardImpact\OpenCode\SessionManager;
+
+$manager = new SessionManager;
+
+// Assess session state by querying the OpenCode API
+$assessment = $manager->assess($session);
+$assessment->state;            // SessionState enum (Active, Idle, Completed, Missing)
+$assessment->shouldComplete(); // true when state is Completed or Idle
+$assessment->isMissing();      // true when the API session was not found
+
+// With completion pattern matching
+$assessment = $manager->assess($session, ['/task completed/i', '/all done/i']);
+
+// Lifecycle transitions (each dispatches a Laravel event)
+$manager->activate($session);   // → SessionActivated
+$manager->markIdle($session);   // → SessionBecameIdle
+$manager->complete($session);   // → SessionCompleted
+$manager->fail($session, $msg); // → SessionFailed
+$manager->interrupt($session);  // → SessionInterrupted
+$manager->recover($session);    // → SessionRecovered
+```
+
+All lifecycle methods are idempotent — calling them on a session already in the target state is a no-op.
+
+### Tolerant Deserialization
+
+The SDK handles unknown enum values from the API gracefully. Unknown part types, message roles, and tool statuses are mapped to `Unknown` enum cases instead of throwing exceptions:
+
+```php
+$part = Part::fromTolerant($data); // returns null if data is invalid, maps unknown enums to Unknown
+```
+
+### Error Handling
+
+DTO-returning methods (e.g. `sessions()->get()`, `sessions()->messages()`) throw on HTTP errors. Boolean-returning methods (e.g. `sessions()->delete()`, `sessions()->abort()`) return `false` on failure instead of throwing.
+
 ## Feature Parity
 
 Comparison with the official OpenCode SDKs ([JS](https://github.com/anomalyco/opencode-sdk-js), [Go](https://github.com/anomalyco/opencode-sdk-go)).
@@ -302,6 +369,15 @@ Comparison with the official OpenCode SDKs ([JS](https://github.com/anomalyco/op
 | List projects | Y | - | Y |
 | Current project | Y | - | Y |
 | Update project | Y | - | - |
+
+### Session Management (Laravel-only)
+
+| Feature | Laravel | JS | Go |
+|---------|:-------:|:--:|:--:|
+| OpenCodeSession Eloquent model | Y | - | - |
+| SessionManager (lifecycle + assess) | Y | - | - |
+| Laravel event dispatching | Y | - | - |
+| Tolerant enum deserialization | Y | - | - |
 
 ### Command
 

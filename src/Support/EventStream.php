@@ -30,8 +30,10 @@ class EventStream
                 continue;
             }
 
-            // Normalize line endings: \r\n and \r to \n
-            $this->buffer .= str_replace(["\r\n", "\r"], "\n", $chunk);
+            // Append raw chunk, then normalize line endings on the full buffer
+            // to avoid false \n\n boundaries when \r\n is split across chunks
+            $this->buffer .= $chunk;
+            $this->buffer = str_replace(["\r\n", "\r"], "\n", $this->buffer);
 
             while (($pos = strpos($this->buffer, "\n\n")) !== false) {
                 $rawEvent = substr($this->buffer, 0, $pos);

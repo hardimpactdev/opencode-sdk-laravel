@@ -124,6 +124,79 @@ it('skips unknown event types', function (): void {
     expect($events[0]->type)->toBe(EventType::SessionIdle);
 });
 
+it('handles CRLF line endings correctly', function (): void {
+    $sseData = "data: {\"type\":\"session.idle\",\"properties\":{\"sessionID\":\"ses_123\"}}\r\n\r\n";
+
+    $stream = createStreamFromString($sseData);
+    $eventStream = new EventStream($stream);
+
+    $events = iterator_to_array($eventStream->events());
+
+    expect($events)->toHaveCount(1);
+    expect($events[0]->type)->toBe(EventType::SessionIdle);
+});
+
+it('handles CRLF split across chunk boundaries', function (): void {
+    // Create a custom stream that returns chunks split at a \r\n boundary
+    $stream = new class implements StreamInterface
+    {
+        private array $chunks;
+
+        private int $index = 0;
+
+        public function __construct()
+        {
+            $this->chunks = [
+                "data: {\"type\":\"session.idle\",\"properties\":{\"sessionID\":\"ses_123\"}}\r",
+                "\n\r\n",
+            ];
+        }
+
+        public function __toString(): string { return implode('', $this->chunks); }
+
+        public function close(): void {}
+
+        public function detach() { return null; }
+
+        public function getSize(): ?int { return null; }
+
+        public function tell(): int { return $this->index; }
+
+        public function eof(): bool { return $this->index >= count($this->chunks); }
+
+        public function isSeekable(): bool { return false; }
+
+        public function seek(int $offset, int $whence = SEEK_SET): void {}
+
+        public function rewind(): void { $this->index = 0; }
+
+        public function isWritable(): bool { return false; }
+
+        public function write(string $string): int { return 0; }
+
+        public function isReadable(): bool { return true; }
+
+        public function read(int $length): string
+        {
+            if ($this->index >= count($this->chunks)) {
+                return '';
+            }
+
+            return $this->chunks[$this->index++];
+        }
+
+        public function getContents(): string { return ''; }
+
+        public function getMetadata(?string $key = null) { return null; }
+    };
+
+    $eventStream = new EventStream($stream);
+    $events = iterator_to_array($eventStream->events());
+
+    expect($events)->toHaveCount(1);
+    expect($events[0]->type)->toBe(EventType::SessionIdle);
+});
+
 it('handles empty stream', function (): void {
     $stream = createStreamFromString('');
     $eventStream = new EventStream($stream);

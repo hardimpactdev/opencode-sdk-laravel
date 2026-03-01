@@ -13,7 +13,7 @@ class QuestionResource extends BaseResource
     /** @return Question[] */
     public function list(): array
     {
-        return $this->connector->send(new ListQuestions)->dto();
+        return $this->connector->send(new ListQuestions)->throw()->dto();
     }
 
     public function answer(
