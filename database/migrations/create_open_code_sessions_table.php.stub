@@ -29,4 +29,9 @@ return new class extends Migration
             $table->index(['status', 'sessionable_type', 'sessionable_id'], 'open_code_sessions_status_sessionable_index');
         });
     }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('open_code_sessions');
+    }
 };

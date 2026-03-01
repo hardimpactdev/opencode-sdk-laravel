@@ -95,9 +95,8 @@ class OpenCodeSession extends Model
 
     public function markAsRecovered(): void
     {
-        $this->update([
+        $this->increment('recovery_attempts', 1, [
             'status' => SessionStatus::Recovered,
-            'recovery_attempts' => $this->recovery_attempts + 1,
             'last_recovery_at' => now(),
         ]);
     }

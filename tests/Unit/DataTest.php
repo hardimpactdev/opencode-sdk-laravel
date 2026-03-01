@@ -93,7 +93,8 @@ it('creates a tool Part from array', function (): void {
 
     expect($part->type)->toBe(PartType::Tool);
     expect($part->tool)->toBe('bash');
-    expect($part->state['status'])->toBe('completed');
+    expect($part->state)->toBeInstanceOf(\HardImpact\OpenCode\Data\ToolState::class);
+    expect($part->state->status)->toBe(\HardImpact\OpenCode\Enums\ToolStatus::Completed);
 });
 
 it('creates an Event from array', function (): void {

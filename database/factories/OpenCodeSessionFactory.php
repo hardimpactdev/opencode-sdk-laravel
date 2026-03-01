@@ -21,6 +21,8 @@ class OpenCodeSessionFactory extends Factory
     public function definition(): array
     {
         return [
+            'sessionable_id' => 1,
+            'sessionable_type' => 'App\Models\User',
             'session_id' => 'ses_'.$this->faker->unique()->uuid(),
             'workspace' => '/home/nckrtl/projects/test',
             'provider' => 'kimi-for-coding',

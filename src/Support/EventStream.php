@@ -22,11 +22,16 @@ class EventStream
     public function events(): Generator
     {
         while (! $this->stream->eof()) {
-            $this->buffer .= $this->stream->read(8192);
+            $chunk = $this->stream->read(8192);
 
-            if (strlen($this->buffer) > self::MAX_BUFFER_SIZE) {
-                throw new RuntimeException('SSE buffer exceeded maximum size');
+            if ($chunk === '') {
+                usleep(10_000); // 10ms backoff to prevent CPU spin on empty reads
+
+                continue;
             }
+
+            // Normalize line endings: \r\n and \r to \n
+            $this->buffer .= str_replace(["\r\n", "\r"], "\n", $chunk);
 
             while (($pos = strpos($this->buffer, "\n\n")) !== false) {
                 $rawEvent = substr($this->buffer, 0, $pos);
@@ -36,6 +41,10 @@ class EventStream
                 if ($event !== null) {
                     yield $event;
                 }
+            }
+
+            if (strlen($this->buffer) > self::MAX_BUFFER_SIZE) {
+                throw new RuntimeException('SSE buffer exceeded maximum size');
             }
         }
 
@@ -49,21 +58,23 @@ class EventStream
 
     protected function parseEvent(string $raw): ?Event
     {
-        $data = null;
+        /** @var list<string> $dataLines */
+        $dataLines = [];
         $eventType = null;
 
         foreach (explode("\n", $raw) as $line) {
             if (str_starts_with($line, 'data:')) {
-                $data = trim(substr($line, 5));
+                $dataLines[] = substr($line, 5) === '' ? '' : ltrim(substr($line, 5), ' ');
             } elseif (str_starts_with($line, 'event:')) {
                 $eventType = trim(substr($line, 6));
             }
         }
 
-        if ($data === null) {
+        if ($dataLines === []) {
             return null;
         }
 
+        $data = implode("\n", $dataLines);
         $decoded = json_decode($data, true);
         if (! is_array($decoded)) {
             return null;

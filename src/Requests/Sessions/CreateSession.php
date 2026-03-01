@@ -36,7 +36,7 @@ class CreateSession extends Request implements HasBody
         return array_filter([
             'title' => $this->title,
             'parentID' => $this->parentID,
-        ]);
+        ], fn ($value) => $value !== null);
     }
 
     public function createDtoFromResponse(Response $response): Session

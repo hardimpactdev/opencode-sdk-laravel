@@ -14,6 +14,7 @@ use HardImpact\OpenCode\Events\SessionInterrupted;
 use HardImpact\OpenCode\Events\SessionRecovered;
 use HardImpact\OpenCode\Models\OpenCodeSession;
 use Illuminate\Support\Facades\Config;
+use Saloon\Exceptions\Request\RequestException;
 use Throwable;
 
 final class SessionManager
@@ -45,11 +46,15 @@ final class SessionManager
         // 1. Session not found → Missing
         try {
             $apiSession = $sessions->get($session->session_id, $workspace);
-        } catch (Throwable) {
-            return new SessionAssessment(
-                state: SessionState::Missing,
-                reason: sprintf('Session %s not found in API', $session->session_id),
-            );
+        } catch (RequestException $e) {
+            if ($e->getResponse()->status() === 404) {
+                return new SessionAssessment(
+                    state: SessionState::Missing,
+                    reason: sprintf('Session %s not found in API', $session->session_id),
+                );
+            }
+
+            throw $e;
         }
 
         // Calculate age
@@ -85,13 +90,16 @@ final class SessionManager
                         reason: 'Completion indicator found in last message',
                     );
                 }
-            } catch (Throwable) {
-                // Message check failed — continue to next heuristic
+            } catch (RequestException $e) {
+                if ($e->getResponse()->status() !== 404) {
+                    throw $e;
+                }
+                // 404 means no messages yet — continue to next heuristic
             }
         }
 
-        // 4. Stale > threshold → Idle
-        if ($ageMs !== null && $ageMs > $staleThreshold) {
+        // 4. Known state + stale > threshold → Idle
+        if ($apiSession->state !== null && $ageMs !== null && $ageMs > $staleThreshold) {
             return new SessionAssessment(
                 state: SessionState::Idle,
                 reason: sprintf('Session stale for %dms (threshold: %dms)', $ageMs, $staleThreshold),
@@ -148,9 +156,11 @@ final class SessionManager
 
     private function resolveClient(OpenCodeSession $session): OpenCode
     {
-        $baseUrl = $session->server_url ?? Config::get('opencode.base_url', 'http://localhost:4096');
+        if ($session->server_url !== null) {
+            return new OpenCode($session->server_url);
+        }
 
-        return new OpenCode($baseUrl);
+        return app(OpenCode::class);
     }
 
     /**

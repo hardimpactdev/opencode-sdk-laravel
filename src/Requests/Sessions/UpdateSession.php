@@ -35,7 +35,7 @@ class UpdateSession extends Request implements HasBody
     {
         return array_filter([
             'title' => $this->title,
-        ]);
+        ], fn ($value) => $value !== null);
     }
 
     public function createDtoFromResponse(Response $response): Session

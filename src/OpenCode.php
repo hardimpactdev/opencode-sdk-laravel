@@ -8,9 +8,11 @@ use HardImpact\OpenCode\Resources\ProviderResource;
 use HardImpact\OpenCode\Resources\QuestionResource;
 use HardImpact\OpenCode\Resources\SessionResource;
 use Saloon\Http\Connector;
+use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 
 class OpenCode extends Connector
 {
+    use AlwaysThrowOnErrors;
     public function __construct(
         protected ?string $baseUrl = null,
     ) {}

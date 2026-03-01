@@ -19,6 +19,10 @@ beforeEach(function (): void {
     $this->manager = new SessionManager;
 });
 
+afterEach(function (): void {
+    MockClient::destroyGlobal();
+});
+
 describe('assess', function (): void {
     test('returns Missing when API session not found', function (): void {
         MockClient::global([
@@ -31,8 +35,6 @@ describe('assess', function (): void {
         expect($assessment)->toBeInstanceOf(SessionAssessment::class);
         expect($assessment->state)->toBe(SessionState::Missing);
         expect($assessment->isTerminal())->toBeTrue();
-
-        MockClient::destroyGlobal();
     });
 
     test('returns Completed when file changes and stale', function (): void {
@@ -53,8 +55,6 @@ describe('assess', function (): void {
         expect($assessment->state)->toBe(SessionState::Completed);
         expect($assessment->isTerminal())->toBeTrue();
         expect($assessment->reason)->toContain('File changes');
-
-        MockClient::destroyGlobal();
     });
 
     test('returns Completed when completion indicators match', function (): void {
@@ -100,8 +100,6 @@ describe('assess', function (): void {
 
         expect($assessment->state)->toBe(SessionState::Completed);
         expect($assessment->reason)->toContain('Completion indicator');
-
-        MockClient::destroyGlobal();
     });
 
     test('returns Idle when session is stale', function (): void {
@@ -112,6 +110,7 @@ describe('assess', function (): void {
                 'id' => 'ses_123',
                 'title' => 'Test',
                 'time' => ['updated' => $staleTimestamp],
+                'state' => 'idle',
                 // no summary / no file changes
             ]),
         ]);
@@ -121,8 +120,6 @@ describe('assess', function (): void {
 
         expect($assessment->state)->toBe(SessionState::Idle);
         expect($assessment->isTerminal())->toBeTrue();
-
-        MockClient::destroyGlobal();
     });
 
     test('returns Idle when state is null and exceeds fallback threshold', function (): void {
@@ -146,8 +143,6 @@ describe('assess', function (): void {
 
         expect($assessment->state)->toBe(SessionState::Idle);
         expect($assessment->reason)->toContain('state is null');
-
-        MockClient::destroyGlobal();
     });
 
     test('returns Active for recently updated session', function (): void {
@@ -167,8 +162,6 @@ describe('assess', function (): void {
 
         expect($assessment->state)->toBe(SessionState::Active);
         expect($assessment->isTerminal())->toBeFalse();
-
-        MockClient::destroyGlobal();
     });
 });
 

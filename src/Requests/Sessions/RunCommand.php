@@ -45,7 +45,7 @@ class RunCommand extends Request implements HasBody
             'agent' => $this->agent,
             'messageID' => $this->messageID,
             'model' => $this->model,
-        ]);
+        ], fn ($value) => $value !== null);
     }
 
     public function createDtoFromResponse(Response $response): MessageWithParts

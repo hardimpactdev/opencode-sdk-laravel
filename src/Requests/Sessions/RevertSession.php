@@ -39,7 +39,7 @@ class RevertSession extends Request implements HasBody
         return array_filter([
             'messageID' => $this->messageID,
             'partID' => $this->partID,
-        ]);
+        ], fn ($value) => $value !== null);
     }
 
     public function createDtoFromResponse(Response $response): Session

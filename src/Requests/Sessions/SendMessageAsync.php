@@ -47,6 +47,6 @@ class SendMessageAsync extends Request implements HasBody
             'messageID' => $this->messageID,
             'system' => $this->system,
             'tools' => $this->tools,
-        ]);
+        ], fn ($value) => $value !== null);
     }
 }

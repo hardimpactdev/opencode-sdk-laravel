@@ -18,7 +18,7 @@ class Part extends Data
         public ?string $filename = null,
         public ?string $tool = null,
         public ?string $callID = null,
-        public ?array $state = null,
+        public ?ToolState $state = null,
         public ?string $snapshot = null,
         public ?array $files = null,
         public ?string $hash = null,

@@ -16,6 +16,8 @@ class EventResource extends BaseResource
     public function stream(?string $directory = null): Generator
     {
         $response = $this->connector->send(new StreamEvents($directory));
+        $response->throw();
+
         $eventStream = new EventStream($response->stream());
 
         return $eventStream->events();

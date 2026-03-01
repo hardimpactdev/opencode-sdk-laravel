@@ -15,9 +15,15 @@ class MessageWithParts extends Data
 
     public static function fromResponse(array $data): self
     {
-        $info = ($data['info']['role'] ?? '') === 'assistant'
-            ? AssistantMessage::from($data['info'])
-            : UserMessage::from($data['info']);
+        $infoData = $data['info'] ?? null;
+
+        if (! is_array($infoData)) {
+            throw new \InvalidArgumentException('Message info must be an array, got '.gettype($infoData));
+        }
+
+        $info = ($infoData['role'] ?? '') === 'assistant'
+            ? AssistantMessage::from($infoData)
+            : UserMessage::from($infoData);
 
         return new self(
             info: $info,

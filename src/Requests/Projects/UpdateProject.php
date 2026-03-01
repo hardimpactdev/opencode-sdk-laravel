@@ -41,7 +41,7 @@ class UpdateProject extends Request implements HasBody
             'icon' => $this->icon,
             'commands' => $this->commands,
             'sandboxes' => $this->sandboxes,
-        ]);
+        ], fn ($value) => $value !== null);
     }
 
     public function createDtoFromResponse(Response $response): Project
