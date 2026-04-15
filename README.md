@@ -10,7 +10,7 @@ A Laravel SDK for the [OpenCode](https://github.com/opencode-ai/opencode) AI cod
 ## Installation
 
 ```bash
-composer require hardimpact/opencode-sdk-laravel
+composer require hardimpactdev/opencode-sdk-laravel
 ```
 
 The package auto-registers its service provider via Laravel's package discovery.

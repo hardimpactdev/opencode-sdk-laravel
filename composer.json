@@ -1,5 +1,5 @@
 {
-    "name": "hardimpact/opencode-sdk-laravel",
+    "name": "hardimpactdev/opencode-sdk-laravel",
     "description": "Laravel SDK for the OpenCode AI coding agent API",
     "keywords": [
         "hardimpact",
