@@ -98,9 +98,34 @@ jobs:
           git push origin ${{ steps.next_version.outputs.version }}
 
       - name: Create GitHub Release
+        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.next_version.outputs.version }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read release notes
+        id: release_notes
+        run: |
+          {
+            echo 'body<<EOF'
+            gh release view "${{ steps.next_version.outputs.version }}" --json body --jq '.body'
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update CHANGELOG
+        uses: stefanzweifel/changelog-updater-action@v1
+        with:
+          latest-version: ${{ steps.next_version.outputs.version }}
+          release-notes: ${{ steps.release_notes.outputs.body }}
+
+      - name: Commit updated CHANGELOG
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          branch: main
+          commit_message: Update CHANGELOG
+          file_pattern: CHANGELOG.md
